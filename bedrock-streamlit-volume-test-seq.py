@@ -8,7 +8,6 @@ from langchain_community.llms import Bedrock
 from langchain_aws import BedrockLLM
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
-from langchain_core.runnables import RunnableSequence
 import time
 import certifi
 import matplotlib.pyplot as plt
@@ -29,7 +28,7 @@ def validate_file(file):
     except Exception as e:
         return False, 0
 
-# Commented out the code snippet to create the Bedrock client
+# Create the Bedrock client
 bedrock_client = boto3.client(
     service_name="bedrock-runtime",
     region_name="us-east-1"
@@ -129,7 +128,6 @@ if run_button:
                         with st.spinner('Waiting for the answer...'):
                             response = chat(question)
                             answer = response["text"]
-                            # Update the answer placeholder with the answer
                             # Update the answer text area with the answer
                             answer_text_area.text_area("LLama3 8B Answer", value=answer, height=200)
 
@@ -156,12 +154,13 @@ if run_button:
                     plot_placeholder.empty()
 
                     # Plot the progress for each user
-                    fig, ax = plt.subplots()
+                    fig, ax = plt.subplots(figsize=(10, 5))  # Set a reasonable size for the plot
                     progress_df.plot(kind='bar', stacked=True, color=['green', 'red'], ax=ax)
-                    plt.xlabel('User ID')
-                    plt.ylabel('Number of Questions')
-                    plt.title('Progress of Answered Questions for Each User')
-                    plot_placeholder.pyplot(fig)
+                    ax.set_xlabel('User ID')
+                    ax.set_ylabel('Number of Questions')
+                    ax.set_title('Progress of Answered Questions for Each User')
+                    ax.yaxis.get_major_locator().set_params(integer=True)  # Ensure y-axis has integer values only
+                    plot_placeholder.pyplot(fig)  # Display the plot below the text areas
 
             st.success(f"Volume testing completed with {user_count} users and {question_count} questions.")
 
