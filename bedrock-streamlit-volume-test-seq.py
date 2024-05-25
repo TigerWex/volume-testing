@@ -110,28 +110,28 @@ if run_button:
             progress_text = st.empty()
 
             # Simulate volume testing
-            # Simulate volume testing
             for user_id in users.index:
                 random.shuffle(questions)  # Shuffle the questions for each user
                 for i, question in enumerate(questions):
                     try:
                         # Create placeholders for the question and answer
                         question_placeholder = st.empty()
-                        answer_placeholder = st.empty()
+                        answer_text_area  = st.empty()
                         # Display the question right away
-                        question_placeholder.write(f"User {user_id}: {question}")
+                        question_placeholder.write(f"UserId {user_id}: {question}")
                         # Display a waiting indicator while waiting for the answer from the model
                         with st.spinner('Waiting for the answer...'):
                             response = chat(question)
                             answer = response["text"]
                             # Update the answer placeholder with the answer
-                            answer_placeholder.write(f"LLaMA 8B: {answer}")
+                            # Update the answer text area with the answer
+                            answer_text_area.text_area("LLama3 8B Answer", value=answer, height=200, vertical_scrollbar=True)
                         
                         # Introduce a delay before clearing the question and answer placeholders
                         time.sleep(5)  # Delay for 5seconds
                         # Erase the question and answer
                         question_placeholder.empty()
-                        answer_placeholder.empty()
+                        answer_text_area.empty()
                     except Exception as e:
                         error_info = f"Error occurred for user {user_id} question: {question}. Error: {str(e)}"
                         error_log.append(error_info)
