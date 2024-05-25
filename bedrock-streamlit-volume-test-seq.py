@@ -3,9 +3,10 @@ import tempfile
 import pandas as pd
 import streamlit as st
 import random
-import json
-import requests
 import boto3
+from langchain_community.llms import Bedrock
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
 
 # Set the AWS profile
 os.environ["AWS_PROFILE"] = "default"
@@ -22,37 +23,36 @@ def validate_file(file):
     except Exception as e:
         return False, 0
 
-# Function to chat with the Llama3 model
-def chat(messages):
-    # Create a Bedrock Runtime client in the AWS Region of your choice
-    client = boto3.client("bedrock-runtime", region_name="us-west-2")
 
-    # Set the model ID for the Llama3 model
-    model_id = "meta.llama3-8b-instruct-v1:0"
+# Create the Bedrock client
+bedrock_client = boto3.client(
+    service_name="bedrock-runtime",
+    region_name="us-east-1"
+)
 
-    # Prepare the input payload
-    payload = {
-        "messages": [
-            {
-                "role": "user",
-                "content": messages
-            }
-        ]
-    }
+# Set the model ID
+model_id = "meta.llama3-8b-instruct-v1:0"
 
-    # Invoke the Llama3 model using the Bedrock Runtime client
-    response = client.invoke_model(
-        modelId=model_id,
-        body=payload
+# Create the Bedrock instance
+llm = Bedrock(
+    model_id=model_id,
+    client=bedrock_client,
+    model_kwargs={"max_gen_len": 512, "temperature": 0.5}
+)
+
+# Define the chat function
+def chat(question):
+    
+    prompt = PromptTemplate(
+        input_variables=["question"],
+        template="{question}"
     )
 
-    # Extract the generated output from the response
-    output = response["body"]["messages"][0]["content"]
+    bedrock_chain = LLMChain(llm=llm, prompt=prompt)
 
-    # Return the generated output
-    return output
-
-
+    response=bedrock_chain({'question': question})
+    return response
+    
 error_log = []
 
 # Sidebar for file uploads
@@ -109,11 +109,9 @@ if run_button:
             # Simulate volume testing
             # Simulate volume testing
             for user_id in users.index:
-                messages = []
                 random.shuffle(questions)  # Shuffle the questions for each user
                 for i, question in enumerate(questions):
                     try:
-                        messages.append({"role": "user", "content": question})
                         # Create placeholders for the question and answer
                         question_placeholder = st.empty()
                         answer_placeholder = st.empty()
@@ -121,8 +119,8 @@ if run_button:
                         question_placeholder.write(f"User {user_id}: {question}")
                         # Display a waiting indicator while waiting for the answer from the model
                         with st.spinner('Waiting for the answer...'):
-                            response = chat(messages)
-                            answer = response["content"]
+                            response = chat(question)
+                            answer = response["text"]
                             # Update the answer placeholder with the answer
                             answer_placeholder.write(f"LLaMA 8B: {answer}")
                         # Erase the question and answer
