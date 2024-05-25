@@ -5,10 +5,13 @@ import streamlit as st
 import random
 import boto3
 from langchain_community.llms import Bedrock
+from langchain_aws import BedrockLLM
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
+from langchain_core.runnables import RunnableSequence
 import time
 import certifi
+import matplotlib.pyplot as plt
 
 # Set the AWS profile
 os.environ["AWS_PROFILE"] = "default"
@@ -26,7 +29,6 @@ def validate_file(file):
     except Exception as e:
         return False, 0
 
-
 # Commented out the code snippet to create the Bedrock client
 bedrock_client = boto3.client(
     service_name="bedrock-runtime",
@@ -37,7 +39,7 @@ bedrock_client = boto3.client(
 model_id = "meta.llama3-8b-instruct-v1:0"
 
 # Create the Bedrock instance
-llm = Bedrock(
+llm = BedrockLLM(
     model_id=model_id,
     client=bedrock_client,
     model_kwargs={"max_gen_len": 512, "temperature": 0.5}
@@ -45,7 +47,6 @@ llm = Bedrock(
 
 # Define the chat function
 def chat(question):
-    
     prompt = PromptTemplate(
         input_variables=["question"],
         template="{question}"
@@ -53,9 +54,9 @@ def chat(question):
 
     bedrock_chain = LLMChain(llm=llm, prompt=prompt)
 
-    response=bedrock_chain({'question': question})
+    response = bedrock_chain({'question': question})
     return response
-    
+
 error_log = []
 
 # Sidebar for file uploads
@@ -84,6 +85,9 @@ run_button = st.sidebar.button("Run Volume Test", disabled=(users_file is None o
 # Main content area
 st.title("Volume Testing Simulator")
 
+# Create a placeholder for the plot
+plot_placeholder = st.empty()
+
 if run_button:
     if users_file is not None and questions_file is not None:
         # Save the uploaded files to the temporary directory
@@ -109,14 +113,16 @@ if run_button:
             # Text to display current progress
             progress_text = st.empty()
 
+            user_progress = {}  # Dictionary to store the progress for each user
             # Simulate volume testing
             for user_id in users.index:
+                user_progress[user_id] = {"answered": 0, "error": 0}  # Initialize progress for each user
                 random.shuffle(questions)  # Shuffle the questions for each user
                 for i, question in enumerate(questions):
                     try:
                         # Create placeholders for the question and answer
                         question_placeholder = st.empty()
-                        answer_text_area  = st.empty()
+                        answer_text_area = st.empty()
                         # Display the question right away
                         question_placeholder.write(f"UserId {user_id}: {question}")
                         # Display a waiting indicator while waiting for the answer from the model
@@ -125,22 +131,37 @@ if run_button:
                             answer = response["text"]
                             # Update the answer placeholder with the answer
                             # Update the answer text area with the answer
-                            answer_text_area.text_area("LLama3 8B Answer", value=answer, height=200, vertical_scrollbar=True)
-                        
+                            answer_text_area.text_area("LLama3 8B Answer", value=answer, height=200)
+
                         # Introduce a delay before clearing the question and answer placeholders
-                        time.sleep(5)  # Delay for 5seconds
+                        time.sleep(5)  # Delay for 5 seconds
                         # Erase the question and answer
                         question_placeholder.empty()
                         answer_text_area.empty()
+                        user_progress[user_id]["answered"] += 1  # Increment the total answered questions
                     except Exception as e:
                         error_info = f"Error occurred for user {user_id} question: {question}. Error: {str(e)}"
                         error_log.append(error_info)
                         st.error(error_info)
+                        user_progress[user_id]["error"] += 1  # Increment the total error count
 
                     # Update progress bar and progress text
                     progress_bar.progress((i + 1) / question_count)
                     progress_text.text(f"Progress: User {user_id+1}/{user_count} - Question {i+1}/{question_count}")
 
+                    # Create a DataFrame from the user_progress dictionary
+                    progress_df = pd.DataFrame(user_progress).T
+
+                    # Clear the previous plot
+                    plot_placeholder.empty()
+
+                    # Plot the progress for each user
+                    fig, ax = plt.subplots()
+                    progress_df.plot(kind='bar', stacked=True, color=['green', 'red'], ax=ax)
+                    plt.xlabel('User ID')
+                    plt.ylabel('Number of Questions')
+                    plt.title('Progress of Answered Questions for Each User')
+                    plot_placeholder.pyplot(fig)
 
             st.success(f"Volume testing completed with {user_count} users and {question_count} questions.")
 

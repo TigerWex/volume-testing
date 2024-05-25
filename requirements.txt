@@ -4,7 +4,9 @@ ollama
 langchain 
 langchain_community
 langchain_openai
+langchain-aws
 python-dotenv
 Requests
 boto3
 certifi
+matplotlib
