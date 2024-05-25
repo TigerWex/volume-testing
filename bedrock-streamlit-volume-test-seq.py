@@ -113,10 +113,14 @@ if run_button:
             progress_text = st.empty()
 
             user_progress = {}  # Dictionary to store the progress for each user
+            user_time = {}  # Dictionary to store the total time taken for each user
+
             # Simulate volume testing
             for user_id in users.index:
                 user_progress[user_id] = {"answered": 0, "error": 0}  # Initialize progress for each user
+                user_time[user_id] = 0  # Initialize total time taken for each user
                 random.shuffle(questions)  # Shuffle the questions for each user
+
                 for i, question in enumerate(questions):
                     try:
                         # Create placeholders for the question and answer
@@ -124,6 +128,10 @@ if run_button:
                         answer_text_area = st.empty()
                         # Display the question right away
                         question_placeholder.write(f"UserId {user_id}: {question}")
+
+                        # Start the timer
+                        start_time = time.time()
+
                         # Display a waiting indicator while waiting for the answer from the model
                         with st.spinner('Waiting for the answer...'):
                             response = chat(question)
@@ -131,8 +139,13 @@ if run_button:
                             # Update the answer text area with the answer
                             answer_text_area.text_area("LLama3 8B Answer", value=answer, height=200)
 
+                        # Stop the timer
+                        end_time = time.time()
+                        time_taken = end_time - start_time
+                        user_time[user_id] += time_taken
+
                         # Introduce a delay before clearing the question and answer placeholders
-                        time.sleep(5)  # Delay for 5 seconds
+                        time.sleep(2)  # Delay for 2 seconds
                         # Erase the question and answer
                         question_placeholder.empty()
                         answer_text_area.empty()
@@ -160,6 +173,14 @@ if run_button:
                     ax.set_ylabel('Number of Questions')
                     ax.set_title('Progress of Answered Questions for Each User')
                     ax.yaxis.get_major_locator().set_params(integer=True)  # Ensure y-axis has integer values only
+
+                    # Display time taken on each bar
+                    for p in ax.patches:
+                        user_id = int(p.get_x() + p.get_width() / 2)
+                        time_text = f"time: {user_time[user_id] / 60:.2f} min"
+                        ax.annotate(time_text, (p.get_x() + p.get_width() / 2, p.get_height() + 0.5), 
+                                    ha='center', va='center', fontsize=10, color='black', fontweight='bold')
+
                     plot_placeholder.pyplot(fig)  # Display the plot below the text areas
 
             st.success(f"Volume testing completed with {user_count} users and {question_count} questions.")
