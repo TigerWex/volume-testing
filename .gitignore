@@ -1,0 +1,5 @@
+/.venv
+/.vscode
+/.vs
+/config-chatgpt.json
+config-chatgpt.json

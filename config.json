@@ -1,0 +1,8 @@
+{
+    "api_url": "https://api.example.com/chatbot",
+    "login_api_url": "https://api.example.com/login",
+    "user_file": "users.xlsx",
+    "question_file": "questions.txt"
+}
+
+  
