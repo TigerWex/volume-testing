@@ -7,9 +7,12 @@ import boto3
 from langchain_community.llms import Bedrock
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
+import time
+import certifi
 
 # Set the AWS profile
 os.environ["AWS_PROFILE"] = "default"
+os.environ["REQUESTS_CA_BUNDLE"] = certifi.where()
 
 # Create a temporary directory for storing the uploaded files
 temp_dir = tempfile.TemporaryDirectory()
@@ -24,7 +27,7 @@ def validate_file(file):
         return False, 0
 
 
-# Create the Bedrock client
+# Commented out the code snippet to create the Bedrock client
 bedrock_client = boto3.client(
     service_name="bedrock-runtime",
     region_name="us-east-1"
@@ -123,6 +126,9 @@ if run_button:
                             answer = response["text"]
                             # Update the answer placeholder with the answer
                             answer_placeholder.write(f"LLaMA 8B: {answer}")
+                        
+                        # Introduce a delay before clearing the question and answer placeholders
+                        time.sleep(5)  # Delay for 5seconds
                         # Erase the question and answer
                         question_placeholder.empty()
                         answer_placeholder.empty()

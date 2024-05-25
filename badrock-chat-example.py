@@ -8,10 +8,11 @@ import streamlit as st
 os.environ["AWS_PROFILE"] = "default"
 
 # create bedrock client
-
-bedrock_client = boto3.client(
+session = boto3.Session()
+bedrock_client = session.client(
     service_name="bedrock-runtime",
-    region_name="us-east-1"
+    region_name="us-east-1",
+    verify=False
 )
 
 modelID = "meta.llama3-8b-instruct-v1:0"
