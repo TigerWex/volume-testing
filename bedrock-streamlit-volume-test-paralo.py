@@ -286,7 +286,8 @@ if run_button:
             total_time_taken = sum(user_time.values()) / 60  # in minutes
             analysis = analyze_results(user_count, question_count, total_successes, total_errors, total_time_taken, avg_response_times, response_times, error_log)
             st.subheader("LLM Analysis and Recommendations")
-            st.write(analysis)
+            st.markdown(f"<div style='font-size: 18px;'>{analysis}</div>", unsafe_allow_html=True)
+
     else:
         st.error("Please upload both user details and questions files.")
 
