@@ -102,9 +102,6 @@ def simulate_user_questions(user_id, questions, user_progress, user_time, respon
             error_log.append(error_info)
             user_progress[user_id]["error"] += 1
 
-        with lock:
-            update_plot(user_progress, user_time, response_times, avg_response_times, error_log)
-
 def update_plot(user_progress, user_time, response_times, avg_response_times, error_log):
     """
     Updates the plot showing the progress of users and other metrics.
@@ -155,8 +152,7 @@ def update_plot(user_progress, user_time, response_times, avg_response_times, er
     axes[1].set_title('Response Times')
     axes[1].legend()
 
-    st.pyplot(fig)
-    plt.close(fig)
+    return fig
 
 def analyze_results(user_count, question_count, total_successes, total_errors, total_time_taken, avg_response_times, response_times, error_log):
     """
@@ -204,7 +200,7 @@ def analyze_results(user_count, question_count, total_successes, total_errors, t
     return response['text']
 
 # Streamlit UI
-st.title("Volume Testing Simulator LLMs")
+st.title("Volume Testing Simulator for LLMs")
 
 # Sidebar for file uploads
 st.sidebar.title("Upload Files")
@@ -263,6 +259,8 @@ if run_button:
                 model_kwargs={"max_gen_len": 512, "temperature": 0.5}
             )
 
+            plot_placeholder = st.empty()
+
             with ThreadPoolExecutor(max_workers=user_count) as executor:
                 futures = []
                 for user_id in users.index:
@@ -278,6 +276,10 @@ if run_button:
                 for error in error_log:
                     st.write(error)
 
+            # Update the plot after all threads are done
+            fig = update_plot(user_progress, user_time, response_times, avg_response_times, error_log)
+            plot_placeholder.pyplot(fig)
+
             # Analyze the results using the LLM
             total_successes = sum(user['answered'] for user in user_progress.values())
             total_errors = sum(user['error'] for user in user_progress.values())
@@ -287,5 +289,6 @@ if run_button:
             st.write(analysis)
     else:
         st.error("Please upload both user details and questions files.")
+
 
 
