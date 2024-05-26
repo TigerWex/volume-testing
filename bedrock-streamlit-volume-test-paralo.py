@@ -204,10 +204,15 @@ def analyze_results(user_count, question_count, total_successes, total_errors, t
     return response['text']
 
 # Streamlit UI
-st.title("Volume Testing Simulator for Large Language Models")
+st.title("Volume Testing Simulator LLMs")
 
 # Sidebar for file uploads
 st.sidebar.title("Upload Files")
+
+# Initialize validity flags
+is_users_valid = False
+is_questions_valid = False
+
 users_file = st.sidebar.file_uploader("Choose a file with user details", type=["xlsx", "xls"])
 questions_file = st.sidebar.file_uploader("Choose a file with questions", type=["xlsx", "xls"])
 
@@ -282,4 +287,5 @@ if run_button:
             st.write(analysis)
     else:
         st.error("Please upload both user details and questions files.")
+
 
