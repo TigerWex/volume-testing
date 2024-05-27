@@ -7,84 +7,57 @@
 (.venv) PS C:\Users\W513032\source\repos\volume testing> pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt
 
 Here's the step-by-step description of the code and the improvements made:
+Volume Testing Simulator for LLMs
+This script performs volume testing on a Large Language Model (LLM) using AWS Bedrock. It simulates multiple users asking a series of questions to the LLM and measures the performance and response times. The results are plotted and analyzed to provide insights into the performance of the LLM and saved to an Excel file.
 
-Volume Testing Simulator for Large Language Models
-Overview
-This repository contains a Python script designed to simulate a volume test for Large Language Models (LLMs). The purpose of this script is to evaluate the performance of an LLM by simulating multiple users asking a series of questions in parallel. The script collects various performance metrics such as response times, error rates, and total processing time, and visualizes these metrics in real-time.
-
-Key Features
-Parallel User Simulation: Simulates multiple users asking questions simultaneously, with a staggered start to emulate real-world usage.
-Real-time Visualization: Provides real-time plots to monitor the progress and performance metrics during the test.
-Performance Metrics: Collects and displays metrics such as response times, total errors, successful answers, and total processing time.
-LLM Analysis: Uses the LLM itself to analyze the results and provide insights and recommendations for performance improvements.
-Prerequisites
-Before running the script, ensure you have the following installed:
-
-Python 3.6 or higher
-Required Python libraries (listed in requirements.txt):
-pandas
-boto3
-certifi
-matplotlib
-concurrent.futures
-IPython.display
-threading
-Usage
-Prepare Input Files:
-
-users.xlsx: An Excel file containing user details. Each row represents a user.
-questions.xlsx: An Excel file containing a list of questions. Each row represents a question.
-Configure AWS Credentials:
-
-Ensure your AWS credentials are configured correctly, as the script uses AWS services.
-Run the Script:
-
-Execute the script to start the volume test. The script will:
-Validate the input files.
-Display the number of user records and questions.
-Simulate users asking questions to the LLM.
-Visualize the performance metrics in real-time.
-Provide an analysis of the results using the LLM.
-
-Script Description
-Here’s a detailed breakdown of what the script does:
-
+Main Components:
 Environment Setup:
 
-Sets AWS profile and certificate bundle.
-Creates a temporary directory for file storage.
+Sets the AWS profile and certificate bundle required for making secure requests to the AWS Bedrock service.
 File Validation:
 
-Validates the input Excel files (users.xlsx and questions.xlsx).
-Displays the number of records in each file.
-Initialize LLM Client:
+validate_file(file_path): Validates if the provided file is a readable Excel file and returns the number of rows.
+Bedrock Client Initialization:
 
-Sets up the Bedrock LLM client using AWS services.
+initialize_bedrock_client(): Initializes the AWS Bedrock client using boto3.
+Chat Function:
+
+chat(question): Sends a question to the LLM and returns the response.
 Simulate User Questions:
 
-Simulates each user asking a series of questions.
-Collects response times and tracks errors.
-Updates real-time plots to visualize progress and performance.
-Update Plots:
+simulate_user_questions(user_id, questions, question_ids, user_progress, user_time, response_times, avg_response_times, error_log, lock, results): Simulates a user asking a series of questions. It measures the response time and updates the user's progress. Any errors encountered are logged. The results are appended to a list to be saved in an Excel file.
+Update Plot:
 
-Plots the progress of answered questions for each user.
-Displays total errors, successful answers, and total processing time.
-Plots response times and average response times.
+update_plot(user_progress, user_time, response_times, avg_response_times, error_log): Generates and updates a plot showing the progress of users, response times, and other metrics. The plot is dynamically updated during the execution.
 Analyze Results:
 
-Summarizes the test results.
-Uses the LLM to analyze the results and provide insights and recommendations.
-Results and Analysis
-After the test completes, the script provides a detailed summary of the performance metrics, including:
+analyze_results(user_count, question_count, total_successes, total_errors, total_time_taken, avg_response_times, response_times, error_log): Analyzes the volume test results using the LLM and provides insights into the performance.
+Main Execution:
 
-Number of users and questions.
-Total successful answers and errors.
-Total time taken for the test.
-Average, maximum, and minimum response times.
-Additionally, the LLM will analyze these results and provide feedback on what is good, what problems exist, and how to improve the performance.
+Validates the user and question files.
+Reads the data from the validated files.
+Initializes necessary data structures for tracking user progress, response times, and errors.
+Executes the volume test using multiple threads to simulate concurrent users.
+Plots and analyzes the results.
+Saves the results to an Excel file named volume-test-run-YYYYMMDD-HHMM.xlsx.
+Usage:
+File Requirements:
 
-Conclusion
-This script is a powerful tool for evaluating the performance of Large Language Models under load. By simulating real-world usage and collecting comprehensive performance metrics, it helps in identifying strengths and areas for improvement in the model.
+wex-users.xlsx: An Excel file containing user details. The first column should be user-id.
+wex-questions.xlsx: An Excel file containing questions. The first column should be question-id, and the second column should be Question.
+Running the Script:
 
-For any questions or issues, please feel free to open an issue in this repository.
+Ensure the required Python packages are installed.
+Set the correct AWS credentials in your environment.
+Place the wex-users.xlsx and wex-questions.xlsx files in the appropriate directory.
+Run the script to perform the volume test.
+Example Output:
+The script generates two plots:
 
+Progress of answered questions for each user, including the time taken.
+Response times and average response times.
+A detailed analysis of the results is printed, providing insights into the performance of the LLM.
+
+The results are saved to an Excel file named volume-test-run-YYYYMMDD-HHMM.xlsx.
+
+![alt text](image-1.png)
