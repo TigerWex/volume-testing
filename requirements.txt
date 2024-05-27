@@ -10,3 +10,4 @@ Requests
 boto3
 certifi
 matplotlib
+urllib3
