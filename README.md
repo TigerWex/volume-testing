@@ -60,8 +60,7 @@ A detailed analysis of the results is printed, providing insights into the perfo
 
 The results are saved to an Excel file named volume-test-run-YYYYMMDD-HHMM.xlsx.
 
-for 2 users:
+for 8 users 10 question:
 ![alt text](image.png)
 
-for 3 users:
-![alt text](image-2.png)
+
